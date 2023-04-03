@@ -22,7 +22,24 @@ class ParseFile {
 
     public function parse(): array | null {
         echo 'Processing file : ' . $this->getFilePath() . PHP_EOL;
-        return $this->getUndefinedVars();
+        
+        $obj = new ReadCode( $this->extractFunctionsFromCode() );
+        //$obj->
+        // return $this->getUndefinedVars();
+        return [];
+    }
+
+    public function extractFunctionsFromCode() {
+        preg_match_all( '/function[\s\n]+([a-zA-z0-9_]+)[\s\n]*\(/' , $this->getFileSource() , $matched );
+        return !empty( $matched ) && isset( $matched[1] ) ? $matched[1] : [];
+    }
+
+    public function getFileSource() {
+        return file_get_contents( $this->getFilePath() );
+    }
+
+    public function extractFunctionSource() {
+        
     }
 }
 
