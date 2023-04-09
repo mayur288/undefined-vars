@@ -2,7 +2,7 @@
 
 $temp = 10;
 
-function testFunctionOne($d) {
+function testFunctionOne( $d ) {
     $a = 10;
     if( $a < 10 ) {
         $b = 20;

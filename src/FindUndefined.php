@@ -1,7 +1,61 @@
 <?php
 
 class ReadCode {
-    private array $_tokens;
+    private ?string $_filePath;
+    private array $_methodNames;
+    private array $_methodVariables;
+    private array $_methodStack;
+    private bool $_methodStart;
+    private bool $_methodEnd;
+    private bool $_methodInnerBlock;
+
+    public function __construct( $filePath ) {
+        $this->_filePath = $filePath;
+        $this->_methodNames = [];
+        $this->_methodStack = [];
+    }
+
+    public function addMethodName( $methodName ) {
+        $this->_methodNames[$methodName] = [];
+    }
+
+    public function isMethodStart( $token ) { 
+        return $token->getTokenName() == 'T_FUNCTION';
+    }
+
+    public function createMethodStack( $token ) {
+        if( $token->getTokenName() == 'T_VARIABLE' ) {
+            $this->_methodVariables[$token->text] = 0;
+        } else if( $token->getTokenName() == '{' ) {
+            return false;
+        }
+        return true;
+    }
+
+    public function checkUndefinedVariables( $token ) {
+
+    }
+    public function findVariables() {
+        $this->_methodStart = $this->_methodEnd = $this->_methodInnerBlock = false;
+        foreach( $this->getAllTokens() as $token ) {
+           // echo "Line {$token->line}: {$token->getTokenName()} ('{$token->text}')", PHP_EOL;
+            if( $this->isMethodStart( $token ) ) {
+                $this->_methodStart = true;
+            } else if( $this->_methodStart = true ) {
+                $this->_methodStart = $this->createMethodStack( $token );
+                $this->_methodInnerBlock = true;
+            } else if( $this->_methodInnerBlock ) {
+                $this->checkUndefinedVariables( $token );
+            }
+
+
+
+        }
+    }
+
+    public function getAllTokens() {
+        return PhpToken::tokenize( file_get_contents( $this->_filePath ) );
+    }
 }
 
 class ParseFile {
@@ -23,23 +77,12 @@ class ParseFile {
     public function parse(): array | null {
         echo 'Processing file : ' . $this->getFilePath() . PHP_EOL;
         
-        $obj = new ReadCode( $this->extractFunctionsFromCode() );
+        $readCode = new ReadCode( $this->getFilePath() );
+        $readCode->findVariables();
+        
         //$obj->
         // return $this->getUndefinedVars();
         return [];
-    }
-
-    public function extractFunctionsFromCode() {
-        preg_match_all( '/function[\s\n]+([a-zA-z0-9_]+)[\s\n]*\(/' , $this->getFileSource() , $matched );
-        return !empty( $matched ) && isset( $matched[1] ) ? $matched[1] : [];
-    }
-
-    public function getFileSource() {
-        return file_get_contents( $this->getFilePath() );
-    }
-
-    public function extractFunctionSource() {
-        
     }
 }
 
